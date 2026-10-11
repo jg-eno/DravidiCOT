@@ -1,0 +1,8 @@
+Metric,Value
+Evaluated examples,500.0
+Correct answers,152.0
+Numeric exact-match accuracy (%),30.4
+Answer extraction coverage (%),100.0
+Accuracy among extracted answers (%),30.4
+Unparseable predictions,0.0
+Incorrect extracted answers,348.0

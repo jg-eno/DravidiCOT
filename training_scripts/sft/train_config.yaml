@@ -1,0 +1,60 @@
+# xCOT Training Configuration
+# Edit this file to control training runs without modifying the Python script.
+# Run with: python xcot_ta_ml_gsm8k_train.py --config train_config.yaml
+
+model:
+  model_id: "Qwen/Qwen3.5-2B"
+  max_length: 1024
+
+dataset:
+  repo_id: "jg-eno/xcot-ta_ml-gsm8k"
+  split: "train"
+  seed: 42
+  validation_fraction: 0.05
+  language_fields:
+    English: "question_en"
+    Tamil: "question_ta"
+    Malayalam: "question_ml"
+    Romanized Tamil: "question_ta_roman"
+    Romanized Malayalam: "question_ml_roman"
+
+training:
+  epochs: 1                    # Overfitting observed at 3 epochs; eval loss rises after epoch 1
+  train_batch_size: 1
+  grad_accum_steps: 8
+  learning_rate: 1.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  gradient_checkpointing: true
+  bf16: auto      # auto = detect; true = force bf16; false = force fp16
+  fp16: auto
+  save_strategy: "epoch"
+  save_total_limit: 2
+  logging_steps: 10
+  logging_first_step: true
+  remove_unused_columns: true
+  dataloader_pin_memory: true
+
+  # Early stopping — prevent overfitting beyond best validation loss
+  early_stopping_patience: 1   # Stop if eval_loss doesn't improve for N epochs
+  load_best_model_at_end: true
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.1              # Increased from 0.05 to reduce overfitting
+  target_modules: "all-linear"
+  task_type: "CAUSAL_LM"
+
+wandb:
+  enabled: true
+  project: "xcot-multilingual-sft"
+  name: "sft-qwen3.5-2b-lora-r16-1ep"
+
+output:
+  output_dir: "xcot_qwen35_lora"
+  final_adapter_path: "xcot_qwen35_lora/final_adapter"
+
+env:
+  cuda_visible_devices: "0"

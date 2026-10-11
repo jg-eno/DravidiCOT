@@ -1,0 +1,71 @@
+# xCOT Training Configuration
+# xCOT = Chain-of-Thought Cross-Lingual Transfer
+# Run with: python xcot_train.py --config xcot_config.yaml
+
+model:
+  model_id: Qwen/Qwen3.5-2B
+  max_length: 1024
+
+dataset:
+  repo_id: jg-eno/xcot-ta_ml-gsm8k
+  split: train
+  seed: 42
+  validation_fraction: 0.05
+  language_fields:
+    en: question_en
+    ta: question_ta
+    ml: question_ml
+    ta_roman: question_ta_roman
+    ml_roman: question_ml_roman
+
+training:
+  epochs: 1
+  train_batch_size: 1
+  grad_accum_steps: 8
+  learning_rate: 0.0001
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  gradient_checkpointing: true
+  bf16: auto
+  fp16: auto
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.1
+  target_modules: all-linear
+  task_type: CAUSAL_LM
+
+# xCOT method components
+xcot:
+  # xICL: Cross-lingual In-Context Learning
+  n_demonstrations: 4
+
+  # mSampling: multilingual sampling
+  language_weights:
+    en: 0.2
+    ta: 0.2
+    ml: 0.2
+    ta_roman: 0.2
+    ml_roman: 0.2
+  sampling_temperature: 1.0
+
+  # Random Online CoT
+  n_cot_variants: 3
+
+  # Token-level xDistill
+  distill_alpha: 0.5
+  distill_temperature: 2.0
+  use_teacher_for_distill: false
+
+output:
+  output_dir: xcot_qwen35_lora
+  final_adapter_path: xcot_qwen35_lora/final_adapter
+
+wandb:
+  enabled: true
+  project: xcot-multilingual-sft
+
+env:
+  cuda_visible_devices: "0"
