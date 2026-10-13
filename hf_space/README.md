@@ -14,9 +14,10 @@ models:
 
 # Tamil TAPO Math Solver
 
-ZeroGPU Gradio demo for the merged Tamil TAPO weights. Uses the model card’s
-system prompt, disabled thinking, and greedy decoding. Outputs an English
-translation, worked solution, and boxed answer.
+ZeroGPU Gradio demo with two selectable inference modes:
+
+- **TAPO:** merged [Tamil TAPO weights](https://huggingface.co/GL3MON/Qwen3.5-2B-Tamil-TAPO). Uses the model card's prompt, disabled thinking, and greedy decoding. The expected output includes an English translation, worked solution, and boxed answer.
+- **xCOT-style multilingual SFT:** the [Qwen3.5-2B LoRA adapter](https://huggingface.co/jg-eno/Qwen-3.5-sft-ta-ml) loaded on [Qwen/Qwen3.5-2B](https://huggingface.co/Qwen/Qwen3.5-2B). Uses the system and language-tagged user prompt from [the SFT training script](https://github.com/jg-eno/DravidiCOT/blob/main/training_scripts/sft/xcot_ta_ml_gsm8k_train.py). The expected response is English reasoning followed by `####` and a numeric answer. This checkpoint is the repository's xCOT-style SFT baseline, not a full xCOT-trained model.
 
 ## CLI deployment
 
@@ -39,13 +40,14 @@ The CLI requests only ZeroGPU; it does not fall back to paid hardware.
 
 ## Runtime
 
-The model loads at startup in BF16 and is placed on CUDA using ZeroGPU’s
+Both models load at startup in BF16 and are placed on CUDA using ZeroGPU’s
 emulation. GPU inference is decorated with `spaces.GPU(duration=120)`.
 Requests run one at a time. The output limit ranges from 128 to 2048 tokens;
 long generations may hit the allocation timeout. Quotas and queues apply.
 Optional optimized DeltaNet kernels are omitted; PyTorch fallback is used.
 
 Space variables: MODEL_ID (defaults to GL3MON/Qwen3.5-2B-Tamil-TAPO),
+XCOT_MODEL_ID (defaults to jg-eno/Qwen-3.5-sft-ta-ml),
 MODEL_REVISION (defaults to main; use a commit SHA for reproducibility), and
 MAX_INPUT_TOKENS (defaults to 4096). Set HF_TOKEN as a read-only Space secret
 only if you switch to a gated/private model.
